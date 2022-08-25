@@ -1,27 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
 
 #include "theTools.h"
 
-//char res[1000], path[100];
-int discount = 0;
-FILE *inf, *ouf;
+#define MaxD 3000
+#define MaxI 30
 
-void backupAndPrepareNew(char fname[])
-{
-	char bakfile[100] = "";
-	char command[100] = "copy /-y ";
-
-	strncpy(bakfile, fname, strlen(fname) - 3);
-	strcat(bakfile, "bak");
-	strcat(command, fname);
-	strcat(command, " ");
-	strcat(command, bakfile);
-	system(command);
-	inf = fopen(bakfile, "r");
-	ouf = fopen(fname, "w");
-}
+int discount = 0, depth = 0;
+char /*data[MaxL][MaxI] = { 0 }, */path[] = "";
 
 void findAndChange()
 {
@@ -32,7 +19,7 @@ void findAndChange()
 	{
 		switch (findStr(cache))
 		{
-			case 1://Price="£¨Êı×Ö£©"
+			case 1://Price="ï¼ˆæ•°å­—ï¼‰"
 				if (discount >= 0)
 				{
 					x = strchr(cache, '\"');
@@ -44,7 +31,7 @@ void findAndChange()
 					strcat(cache, "\"\n");
 				}
 				break;
-			case 2://UnlockByExploration="false"£¨»òtrue£©
+			case 2://UnlockByExploration="false"ï¼ˆæˆ–trueï¼‰
 				x = strchr(cache, '=');
 				strcpy(x, "=\"false\"\n");
 				break;
@@ -57,11 +44,11 @@ void findAndChange()
 	}
 }
 
-void changeGiven(char fname[])
+void toChange(char fileName[])
 {
-	inf = fopen(fname, "r");
-	if (needChange(fname))
-		backupAndPrepareNew(fname);
+	inf = fopen(fileName, "r");
+	if (needChange(fileName))
+		backupAndPrepareNew(fileName);
 	else
 		return;
 
@@ -73,46 +60,108 @@ void changeGiven(char fname[])
 	system("pause");
 }
 
-void searchAndChange()
+int checkFolder()
 {
+	char data[MaxD];
+	const char prefix[] = "classes\n_dlc\n_templates\n";
 
+	getCmd("dir /a:d /b", data);
+	if (!strcmp(data, prefix)) return(1);
+	else return(0);
 }
 
-void main(int argc, char *argv[])
+void searchAndChange(char currPath[])
+{
+	char data[MaxD], fileName[MaxL], names[MaxL][MaxI], str[MaxL * MaxI];
+	int i, count;
+	const char cmd[] = "dir ";
+	const char cmd4folder[] = " /a:d /b";
+	const char cmd4file[] = " *.xml /a:-d /b";
+	const char f404[] = "File Not Found\n";
+	const char F404[] = "æ‰¾ä¸åˆ°æ–‡ä»¶\n";
+
+	depth++;
+
+	//for all files
+	strcpy(str, cmd);
+	strcat(str, currPath);
+	strcat(str, cmd4file);
+	getCmd(str, data);
+	if (strcmp(data, f404) && strcmp(data, F404))
+	{
+		count = separate(data, names, 10);
+		for (i = 0; i < count; i++)
+		{
+			strcpy(str, currPath);
+			strcat(str, "\\");
+			strcat(str, names[i]);
+		}
+
+	}
+
+	//for all folders
+	strcpy(str, cmd);
+	strcat(str, currPath);
+	strcat(str, cmd4folder);
+	getCmd(str, data);
+	if (strcmp(data, f404) && strcmp(data, F404))
+	{
+		count = separate(data, names, 10);
+		for (i = 0; i < count; i++)
+		{
+			strcpy(str, currPath);
+			strcat(str, "\\");
+			strcat(str, names[i]);
+			searchAndChange(str);
+		}
+	}
+	depth--;
+}
+
+int main(int argc, char *argv[])
 {
 	printf("Would like a discount?\n");
-	printf("Integer for percent, for example:\n90\nmeans the price will be 90%% of before.\n");
+	printf("\nInput an integer for percent and press ENTER.\n");
+	printf("For example:\n90\nmeans the price will be 90%% of before.\n");
 	printf("An item of price 5000 will be change into 4500.\n");
-	printf("0 (zero) will make everything free.\n");
-	printf("Negative number means no discount needed.\n");
+	printf("\n0 (zero) will make everything free.\n");
+	printf("\nNegative number means no discount needed.\n");
 	printf("(The original price will not be modified.)\n");
 	scanf("%d", &discount);
 
-	char fname[100] = "gearboxes_scouts.xml";
+	char fileName[100] = "gearboxes_scouts.xml";
 
-	if (argc > 1)
+	//if (argc > 1)
+	//{
+	//	strcpy(fileName, argv[1]);
+	//	strcpy(fileName, strrchr("\\", fileName) + 1);
+	//	toChange(fileName);
+	//}
+	//else
+	if (checkFolder())
 	{
-		strcpy(fname, argv[1]);
-		strcpy(fname, strrchr("\\", fname) + 1);
-		changeGiven(fname);
+		printf("Wrong folder!\n");
+		return -1;
 	}
-	else
-		searchAndChange();
+
+	searchAndChange(path);
+
+	return 0;
 }
 
 /*
-µÚÒ»½×¶Î£º
-±éÀúÃ¿Ò»¸öÎÄ¼ş¼Ğ£¬²¢ÇÒËÑË÷Ã¿Ò»¸öxmlÎÄ¼ş£¬·¢ÏÖÓĞ
-			Price="£¨Êı×Ö£©"
-			UnlockByExploration="false"£¨»òtrue£©
-¾Í°ÑÂ·¾¶¡¢ÎÄ¼şÃûÊä³öµ½ÆÁÄ»ÉÏ
-Èç¹û·¢ÏÖ
+ç¬¬ä¸€é˜¶æ®µï¼š
+éå†æ¯ä¸€ä¸ªæ–‡ä»¶å¤¹ï¼Œå¹¶ä¸”æœç´¢æ¯ä¸€ä¸ªxmlæ–‡ä»¶ï¼Œå‘ç°æœ‰
+			Price="ï¼ˆæ•°å­—ï¼‰"
+			UnlockByExploration="false"ï¼ˆæˆ–trueï¼‰
+å°±æŠŠè·¯å¾„ã€æ–‡ä»¶åè¾“å‡ºåˆ°å±å¹•ä¸Š
+å¦‚æœå‘ç°
 			UnlockByRank="1"
-µ«rank²»µÈÓÚ1£¬°ÑÂ·¾¶¡¢ÎÄ¼şÃûÊä³öµ½ÆÁÄ»ÉÏ
+ä½†rankä¸ç­‰äº1ï¼ŒæŠŠè·¯å¾„ã€æ–‡ä»¶åè¾“å‡ºåˆ°å±å¹•ä¸Š
 
-µÚ¶ş½×¶Î£º
-ĞŞ¸Ä¶ÔÓ¦µÄÖµ£¬²¢ÇÒ°ÑĞŞ¸ÄÇ°µÄÎÄ¼şÀ©Õ¹Ãû¸Ä³É.bak
-Ìá¹©Ñ¡Ïî°Ñ¼Û¸ñ¸Ä³ÉxÕÛ
+ç¬¬äºŒé˜¶æ®µï¼š
+ä¿®æ”¹å¯¹åº”çš„å€¼ï¼Œå¹¶ä¸”æŠŠä¿®æ”¹å‰çš„æ–‡ä»¶æ‰©å±•åæ”¹æˆ.bak
+æä¾›é€‰é¡¹æŠŠä»·æ ¼æ”¹æˆxæŠ˜
 			*/
 
 /*
@@ -123,4 +172,4 @@ void main(int argc, char *argv[])
 
 	/*getCmd("dir gearboxes\\*.xml /b", res);
 	printf("data1:\n%s\n", res);
-	separate(res, fname, 10);*/
+	separate(res, fileName, 10);*/
