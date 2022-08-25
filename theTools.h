@@ -9,10 +9,16 @@
 
 FILE *inf, *ouf;
 
+const char cmd[] = "dir ";
+const char cmd4folder[] = " /a:d /b";
+const char cmd4file[] = " *.xml /a:-d /b";
+const char f404[] = "File Not Found\n";
+const char F404[] = "找不到文件\n";
+
 //run cmd command and put feedback into string resp
 void getCmd(const char cmd[], char resp[])
 {
-	char buf[1024] = "";
+	char buf[MaxL] = "";
 	FILE *fp = _popen(cmd, "r");
 
 	while (fgets(buf, sizeof(buf), fp))
@@ -81,17 +87,95 @@ int needChange(char fileName[])
 
 void backupAndPrepareNew(char fileName[])
 {
-	char bakfile[100] = "";
-	char command[100] = "copy /-y ";
+	char bakFile[MaxL] = "", command[MaxL] = "copy /-y ";
+	char fileName4space[MaxL] = "\"",
+		bakFile4space[MaxL] = "";
 
-	strncpy(bakfile, fileName, strlen(fileName) - 3);
-	strcat(bakfile, "bak");
-	strcat(command, fileName);
-	strcat(command, " ");
-	strcat(command, bakfile);
-	system(command);
-	inf = fopen(bakfile, "r");
+	strncpy(bakFile, fileName, strlen(fileName) - 3);
+	strcat(bakFile, "bak");
+
+	//deal with space
+	if (strchr(fileName, 32))
+	{
+		strcat(fileName4space, fileName);
+		strcpy(bakFile4space, bakFile);
+		strcat(bakFile4space, "\"");
+
+		strcat(command, fileName4space);
+		strcat(command, "\" \"");
+		strcat(command, bakFile4space);
+		system(command);
+	}
+	else
+	{
+		strcat(command, fileName);
+		strcat(command, " ");
+		strcat(command, bakFile);
+		system(command);
+	}
+
+	inf = fopen(bakFile, "r");
 	ouf = fopen(fileName, "w");
+}
+
+void findAndChangeData()
+{
+	char cache[100] = "", *x, num[7] = "";
+	int price;
+
+	while (fgets(cache, MaxL, inf) != NULL)
+	{
+		switch (findStr(cache))
+		{
+			case 1://Price="（数字）"
+				if (discount >= 0)
+				{
+					x = strchr(cache, '\"');
+					strcpy(num, x + 1);
+					price = atoi(num);
+					price = price * discount / 100;
+					itoa(price, num, 10);
+					strcpy(x + 1, num);
+					strcat(cache, "\"\n");
+				}
+				break;
+			case 2://UnlockByExploration="false"（或true）
+				x = strchr(cache, '=');
+				strcpy(x, "=\"false\"\n");
+				break;
+			case 3://UnlockByRank="1"
+				x = strchr(cache, '=');
+				strcpy(x, "=\"1\"\n");
+				break;
+		}
+		fputs(cache, ouf);
+	}
+}
+
+void toChangeFile(char fileName[])
+{
+	inf = fopen(fileName, "r");
+	if (needChange(fileName))
+		backupAndPrepareNew(fileName);
+	else
+		return;
+
+	findAndChangeData();
+
+	fclose(inf);
+	fclose(ouf);
+
+	system("pause");
+}
+
+int checkFolder()
+{
+	char data[MaxL];
+	const char prefix[] = "classes\n_dlc\n_templates\n";
+
+	getCmd("dir /a:d /b", data);
+	if (!strcmp(data, prefix)) return(1);
+	else return(0);
 }
 
 #endif
