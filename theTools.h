@@ -1,5 +1,5 @@
-#ifndef HEADER_FILE
-#define HEADER_FILE
+#ifndef tTools
+#define tTools
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +7,9 @@
 
 #define MaxL 100
 
+FILE *inf, *ouf;
+
+//run cmd command and put feedback into string resp
 void getCmd(const char cmd[], char resp[])
 {
 	char buf[1024] = "";
@@ -18,20 +21,27 @@ void getCmd(const char cmd[], char resp[])
 	_pclose(fp);
 }
 
+int strfchr(char src[], char c)
+{
+	int len = strlen(src), i;
+
+	if (!len) return(-1);
+	return((int) strchr(src, c) - (int) strchr(src, src[0]));
+}
+
+//break string src into array of strings by char x
 int separate(char src[], char dst[], char x)
 {
-	int len = strlen(src), i, s;
+	int len = strlen(src), i = 0, pos;
 
-	for (i = 0; src[i] != x; i++)
-		dst[i] = src[i];
-	dst[i] = 0;
-	s = i + 1;
-
-	//for (i = 0; i < len; i++)
-	//	src[i] = src[i + s];
-	strcpy(src, src + s);
-
-	return s;
+	memset(dst, 0, sizeof(dst));
+	while ((pos = strfchr(src, 10)) != -1)
+	{
+		strncpy(dst + i * MaxL, src, pos);
+		strcpy(src, src + pos + 1);
+		i++;
+	}
+	return i;
 }
 
 int findStr(char src[])
@@ -47,7 +57,6 @@ int findStr(char src[])
 
 	for (i = 0; i < len && (32 == src[i] || '\t' == src[i]); i++);
 
-	//for (j = 0; j < len; j++) str[j] = src[i + j];
 	strcpy(str, src + i);
 
 	if (!strncmp(str, a, strlen(a))) return(1);
@@ -57,31 +66,32 @@ int findStr(char src[])
 	return(0);
 }
 
-int needChange(char fname[])
+//to see if the file needs to be changed
+int needChange(char fileName[])
 {
 	char cache[100] = "";
 	int r = 0;
-	FILE *inf = fopen(fname, "r");
+	FILE *inf = fopen(fileName, "r");
 
 	while (fgets(cache, MaxL, inf) != NULL)
-		if (findStr(cache))
-		{
-			r = 1;
-			fclose(inf);
-		}
+		if (findStr(cache)) r = 1;
 	fclose(inf);
 	return(r);
 }
 
-int strfchr(char src[], char c)
+void backupAndPrepareNew(char fileName[])
 {
-	int len = strlen(src), i;
+	char bakfile[100] = "";
+	char command[100] = "copy /-y ";
 
-	//for (i = 0; i < len; i++)
-	//	if (src[i] == c) return(i);
-	return((int) src - (int) strchr(src, '='));
-
-	return(-1);
+	strncpy(bakfile, fileName, strlen(fileName) - 3);
+	strcat(bakfile, "bak");
+	strcat(command, fileName);
+	strcat(command, " ");
+	strcat(command, bakfile);
+	system(command);
+	inf = fopen(bakfile, "r");
+	ouf = fopen(fileName, "w");
 }
 
 #endif
