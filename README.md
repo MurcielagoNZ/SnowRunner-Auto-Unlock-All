@@ -7,3 +7,6 @@ The program will automatically traverse the xml files in each folder and its sub
 In theory, this tool can be adapted to any upgrade or DLC etc.
 
 Of course, this doesn't unlock unpurchased DLC, or items in the mod.
+
+
+note: will kill all files if there're backup files before...
