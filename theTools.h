@@ -5,20 +5,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MaxL 100
+#define MaxI 1024
+#define MaxL 1024
+#define MaxP 2048
+#define MaxD 4096
 
+int discount = -1;
 FILE *inf, *ouf;
-
-const char cmd[] = "dir ";
-const char cmd4folder[] = " /a:d /b";
-const char cmd4file[] = " *.xml /a:-d /b";
-const char f404[] = "File Not Found\n";
-const char F404[] = "找不到文件\n";
 
 //run cmd command and put feedback into string resp
 void getCmd(const char cmd[], char resp[])
 {
-	char buf[MaxL] = "";
+	char buf[MaxP] = "";
 	FILE *fp = _popen(cmd, "r");
 
 	while (fgets(buf, sizeof(buf), fp))
@@ -36,17 +34,18 @@ int strfchr(char src[], char c)
 }
 
 //break string src into array of strings by char x
-int separate(char src[], char dst[], char x)
+int separate(char src[], char dst[MaxP][MaxI], char x)
 {
 	int len = strlen(src), i = 0, pos;
 
 	memset(dst, 0, sizeof(dst));
 	while ((pos = strfchr(src, 10)) != -1)
 	{
-		strncpy(dst + i * MaxL, src, pos);
+		strncpy(dst[i], src, pos);
 		strcpy(src, src + pos + 1);
 		i++;
 	}
+
 	return i;
 }
 
@@ -55,7 +54,7 @@ int findStr(char src[])
 	int len = strlen(src), i, j;
 	if (!len) return(0);
 
-	char str[100] = "";
+	char str[MaxL] = "";
 
 	const char a[] = "Price=";
 	const char b[] = "UnlockByExploration=";
@@ -75,11 +74,11 @@ int findStr(char src[])
 //to see if the file needs to be changed
 int needChange(char fileName[])
 {
-	char cache[100] = "";
+	char cache[MaxL] = "";
 	int r = 0;
 	FILE *inf = fopen(fileName, "r");
 
-	while (fgets(cache, MaxL, inf) != NULL)
+	while (fgets(cache, MaxP, inf) != NULL)
 		if (findStr(cache)) r = 1;
 	fclose(inf);
 	return(r);
@@ -87,9 +86,10 @@ int needChange(char fileName[])
 
 void backupAndPrepareNew(char fileName[])
 {
-	char bakFile[MaxL] = "", command[MaxL] = "copy /-y ";
-	char fileName4space[MaxL] = "\"",
-		bakFile4space[MaxL] = "";
+	char bakFile[MaxP] = "",
+		command[MaxP] = "if not exist ",
+		fileName4space[MaxP] = "\"",
+		bakFile4space[MaxP] = "\"";
 
 	strncpy(bakFile, fileName, strlen(fileName) - 3);
 	strcat(bakFile, "bak");
@@ -98,32 +98,38 @@ void backupAndPrepareNew(char fileName[])
 	if (strchr(fileName, 32))
 	{
 		strcat(fileName4space, fileName);
+		strcat(fileName4space, "\"");
 		strcpy(bakFile4space, bakFile);
 		strcat(bakFile4space, "\"");
 
+		strcat(command, bakFile4space);
+		strcat(command, " copy ");
 		strcat(command, fileName4space);
-		strcat(command, "\" \"");
+		strcat(command, " ");
 		strcat(command, bakFile4space);
 		system(command);
 	}
 	else
 	{
+		strcat(command, bakFile);
+		strcat(command, " copy ");
 		strcat(command, fileName);
 		strcat(command, " ");
 		strcat(command, bakFile);
 		system(command);
 	}
 
+	printf("Backup made.\n%s\n\n", bakFile);
 	inf = fopen(bakFile, "r");
 	ouf = fopen(fileName, "w");
 }
 
-void findAndChangeData()
+void findAndChangeData(FILE *inf, FILE *ouf)
 {
-	char cache[100] = "", *x, num[7] = "";
+	char cache[MaxL] = "", *x, num[MaxL] = "";
 	int price;
 
-	while (fgets(cache, MaxL, inf) != NULL)
+	while (fgets(cache, MaxP, inf) != NULL)
 	{
 		switch (findStr(cache))
 		{
@@ -149,33 +155,42 @@ void findAndChangeData()
 				break;
 		}
 		fputs(cache, ouf);
+
+		//puts(cache);//test
 	}
 }
 
 void toChangeFile(char fileName[])
 {
-	inf = fopen(fileName, "r");
 	if (needChange(fileName))
+	{
 		backupAndPrepareNew(fileName);
-	else
-		return;
-
-	findAndChangeData();
-
-	fclose(inf);
-	fclose(ouf);
-
-	system("pause");
+		printf("Now changing:\n%s\n\n", fileName);
+		findAndChangeData(inf, ouf);
+		fclose(inf);
+		fclose(ouf);
+	}
+	//else//test
+	//	printf("No need to change file:\n%s\n\n", fileName);
 }
 
-int checkFolder()
+int checkNotFolder()
 {
-	char data[MaxL];
+	char data[MaxP] = "";
 	const char prefix[] = "classes\n_dlc\n_templates\n";
 
 	getCmd("dir /a:d /b", data);
-	if (!strcmp(data, prefix)) return(1);
-	else return(0);
+	//test
+	return(0);
+	return(strcmp(data, prefix));
+}
+
+int notEmpty(char data[])
+{
+	const char f404[] = "File Not Found\n";
+	const char F404[] = "找不到文件\n";
+
+	return(strlen(data, "") && strcmp(data, f404) && strcmp(data, F404));
 }
 
 #endif
