@@ -9,7 +9,10 @@ const char cmd4file[] = " *.xml /a:-d /b";
 
 void searchAndChange(char currPath[])
 {
-	char data[MaxP * MaxI] = "", fileName[MaxP] = "", names[MaxP][MaxI] = { 0 }, str[MaxP] = "";
+	char data[MaxP * MaxI] = "",
+		fileName[MaxP] = "",
+		names[MaxP][MaxI] = { 0 },
+		str[MaxP] = "";
 	int i, count;
 
 	depth++;
@@ -49,7 +52,8 @@ void searchAndChange(char currPath[])
 			strcpy(str, currPath);
 			strcat(str, "\\");
 			strcat(str, names[i]);
-			searchAndChange(str);
+			if (whiteFolder(names[i])) searchAndChange(str);
+			else delDir(str);
 		}
 	}
 	else printf("No folders found.\n\n");
@@ -66,7 +70,7 @@ int main(int argc, char *argv[])
 	printf("\n0 (zero) will make everything free.\n");
 	printf("\nNegative number means no discount needed.\n");
 	printf("(The original price will not be modified.)\n");
-	scanf("%d", &discount);
+	//scanf("%d", &discount);
 	//test
 	//discount = 80;
 
@@ -98,8 +102,8 @@ int main(int argc, char *argv[])
 		else
 		{
 			printf("Searching folders.\n");
-			//searchAndChange("[media]");//test
-			searchAndChange("");
+			searchAndChange("[media]");//test
+			//searchAndChange("");
 		}
 
 	printf("All done. Changed %d files.\n", count);
