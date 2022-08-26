@@ -9,9 +9,36 @@
 #define MaxL 1024 //max string length
 #define MaxP 2048 //max path length
 #define MaxD 4096 //max data size
+#define BLC 23
 
 int discount = -1, count = 0;
 FILE *inf, *ouf;
+
+const char blkFolders[BLC][25] = {
+									"_templates",
+									"addons_category",
+									"ambients",
+									"cameras",
+									"cargo_types",
+									"customization_presets",
+									"daytimes",
+									"driver_characters",
+									"editor",
+									"env",
+									"grass",
+									"media_data_types",
+									"models",
+									"mud",
+									"overlays",
+									"particles",
+									"plants",
+									"skies",
+									"sounds",
+									"terrain_layers",
+									"waters",
+									"weather",
+									"zones" };
+
 
 //run cmd command and put feedback into string resp
 void getCmd(const char cmd[], char resp[])
@@ -43,7 +70,8 @@ int separate(char src[], char dst[MaxP][MaxI], char x)
 	{
 		strncpy(dst[i], src, pos);
 		strcpy(src, src + pos + 1);
-		if (strcmp(dst[i], "models")) i++;
+		//if (strcmp(dst[i], "models"))
+		i++;
 	}
 
 	return i;
@@ -190,7 +218,7 @@ int checkNotFolder()
 
 	getCmd("dir /a:d /b", data);
 	//test
-	//return(0);
+	return(0);
 	return(strcmp(data, prefix));
 }
 
@@ -200,6 +228,25 @@ int notEmpty(char data[])
 	const char F404[] = "找不到文件\n";
 
 	return(strlen(data, "") && strcmp(data, f404) && strcmp(data, F404));
+}
+
+int whiteFolder(char name[])
+{
+	int i;
+
+	for (i = 0; i < BLC; i++)
+		if (!strcmp(name, blkFolders[i]))
+			return(0);
+	return(1);
+}
+
+void delDir(char path[])
+{
+	char command[MaxP] = "rd /s /q \"";
+
+	strcat(command, path);
+	strcat(command, "\"");
+	system(command);
 }
 
 #endif
