@@ -5,18 +5,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MaxI 1024
-#define MaxL 1024
-#define MaxP 2048
-#define MaxD 4096
+#define MaxI 512 //max items
+#define MaxL 1024 //max string length
+#define MaxP 2048 //max path length
+#define MaxD 4096 //max data size
 
-int discount = -1;
+int discount = -1, count = 0;
 FILE *inf, *ouf;
 
 //run cmd command and put feedback into string resp
 void getCmd(const char cmd[], char resp[])
 {
-	char buf[MaxP] = "";
+	char buf[MaxD] = "";
 	FILE *fp = _popen(cmd, "r");
 
 	while (fgets(buf, sizeof(buf), fp))
@@ -43,7 +43,7 @@ int separate(char src[], char dst[MaxP][MaxI], char x)
 	{
 		strncpy(dst[i], src, pos);
 		strcpy(src, src + pos + 1);
-		i++;
+		if (strcmp(dst[i], "models")) i++;
 	}
 
 	return i;
@@ -78,7 +78,7 @@ int needChange(char fileName[])
 	int r = 0;
 	FILE *inf = fopen(fileName, "r");
 
-	while (fgets(cache, MaxP, inf) != NULL)
+	while (fgets(cache, sizeof(cache), inf) != NULL)
 		if (findStr(cache)) r = 1;
 	fclose(inf);
 	return(r);
@@ -86,10 +86,10 @@ int needChange(char fileName[])
 
 void backupAndPrepareNew(char fileName[])
 {
-	char bakFile[MaxP] = "",
+	char bakFile[MaxL] = "",
 		command[MaxP] = "if not exist ",
-		fileName4space[MaxP] = "\"",
-		bakFile4space[MaxP] = "\"";
+		fileName4space[MaxL] = "\"",
+		bakFile4space[MaxL] = "\"";
 
 	strncpy(bakFile, fileName, strlen(fileName) - 3);
 	strcat(bakFile, "bak");
@@ -129,7 +129,7 @@ void findAndChangeData(FILE *inf, FILE *ouf)
 	char cache[MaxL] = "", *x, num[MaxL] = "";
 	int price;
 
-	while (fgets(cache, MaxP, inf) != NULL)
+	while (fgets(cache, sizeof(cache), inf) != NULL)
 	{
 		switch (findStr(cache))
 		{
@@ -156,22 +156,31 @@ void findAndChangeData(FILE *inf, FILE *ouf)
 		}
 		fputs(cache, ouf);
 
-		//puts(cache);//test
+		//printf("%s", cache);//test
 	}
 }
 
 void toChangeFile(char fileName[])
 {
+	char command[MaxP] = "del ";
+
 	if (needChange(fileName))
 	{
+		//test
+		count++;
+		printf("File No.%d\n", count);
 		backupAndPrepareNew(fileName);
 		printf("Now changing:\n%s\n\n", fileName);
 		findAndChangeData(inf, ouf);
 		fclose(inf);
 		fclose(ouf);
 	}
-	//else//test
-	//	printf("No need to change file:\n%s\n\n", fileName);
+	else
+	{
+	//	printf("No need to change file:\n%s\n\n", fileName);//test
+		strcat(command, fileName);
+		system(command);
+	}
 }
 
 int checkNotFolder()
@@ -181,7 +190,7 @@ int checkNotFolder()
 
 	getCmd("dir /a:d /b", data);
 	//test
-	return(0);
+	//return(0);
 	return(strcmp(data, prefix));
 }
 
