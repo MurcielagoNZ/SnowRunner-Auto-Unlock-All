@@ -119,7 +119,7 @@ void backupAndPrepareNew(char fileName[])
 		system(command);
 	}
 
-	printf("Backup made.\n%s\n\n", bakFile);
+	//printf("Backup made.\n%s\n\n", bakFile);
 	inf = fopen(bakFile, "r");
 	ouf = fopen(fileName, "w");
 }
