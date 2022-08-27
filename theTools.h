@@ -84,17 +84,20 @@ int findStr(char src[])
 
 	char str[MaxL] = "";
 
-	const char a[] = "Price=";
-	const char b[] = "UnlockByExploration=";
-	const char c[] = "UnlockByRank=";
+	const char
+		c[] = "Country=",
+		p[] = "Price=",
+		e[] = "UnlockByExploration=",
+		r[] = "UnlockByRank=";
 
 	for (i = 0; i < len && (32 == src[i] || '\t' == src[i]); i++);
 
 	strcpy(str, src + i);
 
-	if (!strncmp(str, a, strlen(a))) return(1);
-	if (!strncmp(str, b, strlen(b))) return(2);
-	if (!strncmp(str, c, strlen(c))) return(3);
+	if (!strncmp(str, c, strlen(c))) return(1);
+	if (!strncmp(str, p, strlen(p))) return(2);
+	if (!strncmp(str, e, strlen(e))) return(3);
+	if (!strncmp(str, r, strlen(e))) return(4);
 
 	return(0);
 }
@@ -161,7 +164,11 @@ void findAndChangeData(FILE *inf, FILE *ouf)
 	{
 		switch (findStr(cache))
 		{
-			case 1://Price="（数字）"
+			case 1://Country
+				x = strchr(cache, '=');
+				strcpy(x, "=\"\"\n");
+				break;
+			case 2://Price
 				if (discount >= 0)
 				{
 					x = strchr(cache, '\"');
@@ -173,11 +180,11 @@ void findAndChangeData(FILE *inf, FILE *ouf)
 					strcat(cache, "\"\n");
 				}
 				break;
-			case 2://UnlockByExploration="false"（或true）
+			case 3://UnlockByExploration
 				x = strchr(cache, '=');
 				strcpy(x, "=\"false\"\n");
 				break;
-			case 3://UnlockByRank="1"
+			case 4://UnlockByRank
 				x = strchr(cache, '=');
 				strcpy(x, "=\"1\"\n");
 				break;
