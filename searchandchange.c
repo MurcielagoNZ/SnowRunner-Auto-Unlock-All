@@ -70,9 +70,9 @@ int main(int argc, char *argv[])
 	printf("\n0 (zero) will make everything free.\n");
 	printf("\nNegative number means no discount needed.\n");
 	printf("(The original price will not be modified.)\n");
-	//scanf("%d", &discount);
+	scanf("%d", &discount);
 	//test
-	//discount = 80;
+	//discount = 0;
 
 	if (argc > 1)
 	{
@@ -107,6 +107,6 @@ int main(int argc, char *argv[])
 		}
 
 	printf("All done. Changed %d files.\n", count);
-	system("pause");
+	//system("pause");
 	return 0;
 }
