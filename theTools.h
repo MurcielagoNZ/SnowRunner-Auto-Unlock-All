@@ -5,39 +5,44 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MaxI 512 //max items
+#define MaxI 1024 //max items
 #define MaxL 1024 //max string length
-#define MaxP 2048 //max path length
-#define MaxD 4096 //max data size
-#define BLC 23
+#define MaxP 4096 //max path length
+#define MaxD 16384 //max data size
 
 int discount = -1, count = 0;
 FILE *inf, *ouf;
 
-const char blkFolders[BLC][25] = {
-									"_templates",
-									"addons_category",
-									"ambients",
-									"cameras",
-									"cargo_types",
-									"customization_presets",
-									"daytimes",
-									"driver_characters",
-									"editor",
-									"env",
-									"grass",
-									"media_data_types",
-									"models",
-									"mud",
-									"overlays",
-									"particles",
-									"plants",
-									"skies",
-									"sounds",
-									"terrain_layers",
-									"waters",
-									"weather",
-									"zones" };
+//debug
+FILE *log;
+
+#define BFC 23
+const char blkFolders[BFC][25] =
+{
+	"_templates",
+	"addons_category",
+	"ambients",
+	"cameras",
+	"cargo_types",
+	"customization_presets",
+	"daytimes",
+	"driver_characters",
+	"editor",
+	"env",
+	"grass",
+	"media_data_types",
+	"models",
+	"mud",
+	"overlays",
+	"particles",
+	"plants",
+	"skies",
+	"sounds",
+	"terrain_layers",
+	"waters",
+	"weather",
+	"zones"
+};
 
 
 //run cmd command and put feedback into string resp
@@ -65,12 +70,11 @@ int separate(char src[], char dst[MaxP][MaxI], char x)
 {
 	int len = strlen(src), i = 0, pos;
 
-	memset(dst, 0, sizeof(dst));
 	while ((pos = strfchr(src, 10)) != -1)
 	{
+		memset(dst[i], 0, sizeof(dst[i]));
 		strncpy(dst[i], src, pos);
 		strcpy(src, src + pos + 1);
-		//if (strcmp(dst[i], "models"))
 		i++;
 	}
 
@@ -92,12 +96,17 @@ int findStr(char src[])
 
 	for (i = 0; i < len && (32 == src[i] || '\t' == src[i]); i++);
 
+	memset(str, 0, sizeof(str));
 	strcpy(str, src + i);
 
-	if (!strncmp(str, c, strlen(c))) return(1);
-	if (!strncmp(str, p, strlen(p))) return(2);
-	if (!strncmp(str, e, strlen(e))) return(3);
-	if (!strncmp(str, r, strlen(e))) return(4);
+	if (!strncmp(str, c, strlen(c)))
+		return(1);
+	if (!strncmp(str, p, strlen(p)))
+		return(2);
+	if (!strncmp(str, e, strlen(e)))
+		return(3);
+	if (!strncmp(str, r, strlen(r)))
+		return(4);
 
 	return(0);
 }
@@ -118,19 +127,22 @@ int needChange(char fileName[])
 void backupAndPrepareNew(char fileName[])
 {
 	char bakFile[MaxL] = "",
-		command[MaxP] = "if not exist ",
+		command[MaxP] = ""/*if not exist */,
 		fileName4space[MaxL] = "\"",
 		bakFile4space[MaxL] = "\"";
+
+	//debug
+	//int x = strcmp(fileName, "[media]\\classes\\trucks\\kolob_74760_tuning\\kolob_74760_exhaust_2.xml");
 
 	strncpy(bakFile, fileName, strlen(fileName) - 3);
 	strcat(bakFile, "bak");
 
 	//deal with space
-	if (strchr(fileName, 32))
+/*	if (strchr(fileName, 32))
 	{
 		strcat(fileName4space, fileName);
 		strcat(fileName4space, "\"");
-		strcpy(bakFile4space, bakFile);
+		strcat(bakFile4space, bakFile);
 		strcat(bakFile4space, "\"");
 
 		strcat(command, bakFile4space);
@@ -140,9 +152,9 @@ void backupAndPrepareNew(char fileName[])
 		strcat(command, bakFile4space);
 		system(command);
 	}
-	else
+	else*/
 	{
-		strcat(command, bakFile);
+		//strcat(command, bakFile);
 		strcat(command, " copy ");
 		strcat(command, fileName);
 		strcat(command, " ");
@@ -153,6 +165,9 @@ void backupAndPrepareNew(char fileName[])
 	//printf("Backup made.\n%s\n\n", bakFile);
 	inf = fopen(bakFile, "r");
 	ouf = fopen(fileName, "w");
+
+	//debug
+	//if ((NULL == inf) || (NULL == ouf)) system("pause");
 }
 
 void findAndChangeData(FILE *inf, FILE *ouf)
@@ -201,8 +216,13 @@ void toChangeFile(char fileName[])
 
 	if (needChange(fileName))
 	{
+		//debug
+		fprintf(log, "%s\n", fileName);
+		//int x = strcmp(fileName, "[media]\\classes\\trucks\\gmc_9500_tuning\\gmc_9500_bumper_01.xml");
+
 		//test
 		count++;
+		system("cls");
 		printf("File No.%d\n", count);
 		backupAndPrepareNew(fileName);
 		printf("Now changing:\n%s\n\n", fileName);
@@ -212,7 +232,7 @@ void toChangeFile(char fileName[])
 	}
 	else
 	{
-	//	printf("No need to change file:\n%s\n\n", fileName);//test
+		printf("No need to change file:\n%s\n\n", fileName);//test
 		strcat(command, fileName);
 		system(command);
 	}
@@ -241,7 +261,7 @@ int whiteFolder(char name[])
 {
 	int i;
 
-	for (i = 0; i < BLC; i++)
+	for (i = 0; i < BFC; i++)
 		if (!strcmp(name, blkFolders[i]))
 			return(0);
 	return(1);
