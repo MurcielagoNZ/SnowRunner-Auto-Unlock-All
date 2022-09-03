@@ -5,7 +5,7 @@ char name[MaxP] = "";
 
 const char cmd[] = "dir ";
 const char cmd4folder[] = " /a:d /b";
-const char cmd4file[] = " *.xml /a:-d /b";
+const char cmd4file[] = " /a:-d *.xml /b";
 
 void searchAndChange(char currPath[])
 {
@@ -18,8 +18,13 @@ void searchAndChange(char currPath[])
 	depth++;
 
 	printf("Now working with path:\n%s\nDepth: %d\n\n", currPath, depth);
+	
+	//debug
+	//int x = strcmp(currPath, "[media]\\classes\\trucks\\gmc_9500_tuning");
 
+	
 	//for all files
+	memset(str, 0, sizeof(str));
 	strcpy(str, cmd);
 	strcat(str, currPath);
 	strcat(str, cmd4file);
@@ -39,6 +44,7 @@ void searchAndChange(char currPath[])
 	else printf("No files found.\n\n");
 
 	//for all folders
+	memset(str, 0, sizeof(str));
 	strcpy(str, cmd);
 	strcat(str, currPath);
 	strcat(str, cmd4folder);
@@ -49,10 +55,12 @@ void searchAndChange(char currPath[])
 		count = separate(data, names, 10);
 		for (i = 0; i < count; i++)
 		{
+			memset(str, 0, sizeof(str));
 			strcpy(str, currPath);
 			strcat(str, "\\");
 			strcat(str, names[i]);
-			if (whiteFolder(names[i])) searchAndChange(str);
+			if (whiteFolder(names[i])) 
+				searchAndChange(str);
 			else delDir(str);
 		}
 	}
@@ -70,9 +78,14 @@ int main(int argc, char *argv[])
 	printf("\n0 (zero) will make everything free.\n");
 	printf("\nNegative number means no discount needed.\n");
 	printf("(The original price will not be modified.)\n");
+	//test
 	scanf("%d", &discount);
 	//test
-	//discount = 0;
+	//discount = -1;
+	system("cls");
+
+	//debug
+	log = fopen("files_changed.log", "w");
 
 	if (argc > 1)
 	{
@@ -80,6 +93,7 @@ int main(int argc, char *argv[])
 
 		for (i = 1; i < argc; i++)
 		{
+			memset(name, 0, sizeof(name));
 			strcpy(name, argv[i]);
 			if (needChange(name))
 			{
@@ -106,7 +120,14 @@ int main(int argc, char *argv[])
 			//searchAndChange("");
 		}
 
+	system("del /s *.bak");
+	system("cls");
 	printf("All done. Changed %d files.\n", count);
-	//system("pause");
+	system("pause");
+
+	//debug
+	fprintf(log, "%d\n", count);
+	fclose(log);
+
 	return 0;
 }
