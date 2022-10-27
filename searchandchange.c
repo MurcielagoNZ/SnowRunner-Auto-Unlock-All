@@ -17,11 +17,8 @@ void searchAndChange(char currPath[])
 
 	depth++;
 
+	system("cls");
 	printf("Now working with path:\n%s\nDepth: %d\n\n", currPath, depth);
-	
-	//debug
-	//int x = strcmp(currPath, "[media]\\classes\\trucks\\gmc_9500_tuning");
-
 	
 	//for all files
 	memset(str, 0, sizeof(str));
@@ -31,7 +28,7 @@ void searchAndChange(char currPath[])
 	getCmd(str, data);
 	if (notEmpty(data))
 	{
-		//printf("Found files:\n%s\n", data);
+		printf("Found files:\n%s\n", data);
 		count = separate(data, names, 10);
 		for (i = 0; i < count; i++)
 		{
@@ -51,7 +48,7 @@ void searchAndChange(char currPath[])
 	getCmd(str, data);
 	if (notEmpty(data))
 	{
-		//printf("Found folders:\n%s\n", data);
+		printf("Found folders:\n%s\n", data);
 		count = separate(data, names, 10);
 		for (i = 0; i < count; i++)
 		{
@@ -78,10 +75,7 @@ int main(int argc, char *argv[])
 	printf("\n0 (zero) will make everything free.\n");
 	printf("\nNegative number means no discount needed.\n");
 	printf("(The original price will not be modified.)\n");
-	//test
 	scanf("%d", &discount);
-	//test
-	//discount = -1;
 	system("cls");
 
 	//debug
@@ -97,6 +91,7 @@ int main(int argc, char *argv[])
 			strcpy(name, argv[i]);
 			if (needChange(name))
 			{
+				system("cls");
 				printf("Working with:\n%s\n\n", name);
 				backupAndPrepareNew(name);
 				toChangeFile(name);
