@@ -6,9 +6,9 @@
 #include <string.h>
 
 #define MaxI 1024 //max items
-#define MaxL 1024 //max string length
+#define MaxL 1280 //max string length
 #define MaxP 4096 //max path length
-#define MaxD 16384 //max data size
+#define MaxD 16896 //max data size
 
 int discount = -1, count = 0;
 FILE *inf, *ouf;
@@ -119,55 +119,35 @@ int needChange(char fileName[])
 	FILE *inf = fopen(fileName, "r");
 
 	while (fgets(cache, sizeof(cache), inf) != NULL)
-		if (findStr(cache)) r = 1;
+		if (findStr(cache))
+		{
+			fclose(inf);
+			return(1);
+		}
 	fclose(inf);
-	return(r);
+	return(0);
 }
 
 void backupAndPrepareNew(char fileName[])
 {
 	char bakFile[MaxL] = "",
-		command[MaxP] = ""/*if not exist */,
+		command[MaxP] = "",
 		fileName4space[MaxL] = "\"",
 		bakFile4space[MaxL] = "\"";
-
-	//debug
-	//int x = strcmp(fileName, "[media]\\classes\\trucks\\kolob_74760_tuning\\kolob_74760_exhaust_2.xml");
 
 	strncpy(bakFile, fileName, strlen(fileName) - 3);
 	strcat(bakFile, "bak");
 
-	//deal with space
-/*	if (strchr(fileName, 32))
-	{
-		strcat(fileName4space, fileName);
-		strcat(fileName4space, "\"");
-		strcat(bakFile4space, bakFile);
-		strcat(bakFile4space, "\"");
-
-		strcat(command, bakFile4space);
-		strcat(command, " copy ");
-		strcat(command, fileName4space);
-		strcat(command, " ");
-		strcat(command, bakFile4space);
-		system(command);
-	}
-	else*/
-	{
-		//strcat(command, bakFile);
-		strcat(command, " copy ");
-		strcat(command, fileName);
-		strcat(command, " ");
-		strcat(command, bakFile);
-		system(command);
-	}
+	strcat(command, " copy ");
+	strcat(command, fileName);
+	strcat(command, " ");
+	strcat(command, bakFile);
+	system(command);
 
 	//printf("Backup made.\n%s\n\n", bakFile);
 	inf = fopen(bakFile, "r");
 	ouf = fopen(fileName, "w");
 
-	//debug
-	//if ((NULL == inf) || (NULL == ouf)) system("pause");
 }
 
 void findAndChangeData(FILE *inf, FILE *ouf)
@@ -205,8 +185,6 @@ void findAndChangeData(FILE *inf, FILE *ouf)
 				break;
 		}
 		fputs(cache, ouf);
-
-		//printf("%s", cache);//test
 	}
 }
 
@@ -218,9 +196,7 @@ void toChangeFile(char fileName[])
 	{
 		//debug
 		fprintf(log, "%s\n", fileName);
-		//int x = strcmp(fileName, "[media]\\classes\\trucks\\gmc_9500_tuning\\gmc_9500_bumper_01.xml");
 
-		//test
 		count++;
 		system("cls");
 		printf("File No.%d\n", count);
@@ -232,6 +208,7 @@ void toChangeFile(char fileName[])
 	}
 	else
 	{
+		system("cls");
 		printf("No need to change file:\n%s\n\n", fileName);//test
 		strcat(command, fileName);
 		system(command);
@@ -244,7 +221,6 @@ int checkNotFolder()
 	const char prefix[] = "classes\n_dlc\n_templates\n";
 
 	getCmd("dir /a:d /b", data);
-	//test
 	return(0);
 	return(strcmp(data, prefix));
 }
