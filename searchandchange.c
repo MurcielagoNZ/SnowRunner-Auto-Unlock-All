@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "theTools.h"
 
 int depth = 0, i;
@@ -10,7 +12,6 @@ const char cmd4file[] = " /a:-d *.xml /b";
 void searchAndChange(char currPath[])
 {
 	char data[MaxP * MaxI] = "",
-		fileName[MaxP] = "",
 		names[MaxP][MaxI] = { 0 },
 		str[MaxP] = "";
 	int i, count;
@@ -68,14 +69,21 @@ void searchAndChange(char currPath[])
 
 int main(int argc, char *argv[])
 {
+	printf("该工具会帮你解锁物品的地区、级别限制，并让需要探索才能解锁的物品直接可用。\n");
+	printf("This tool will unlock everything.\n\n");
+	printf("想打折嘛？\n");
 	printf("Would like a discount?\n");
-	printf("\nInput an integer for percent and press ENTER.\n");
+	printf("输入一个整数作为百分数并且按下【回车】。\n");
+	printf("Input an integer for percent and press ENTER.\n");
+	printf("例如：\n90\n会将所有物品的价格打九折。\n");
 	printf("For example:\n90\nmeans the price will be 10%% off.\n");
-	printf("An item of price 5000 will be change into 4500.\n");
-	printf("\n0 (zero) will make everything free.\n");
-	printf("\nNegative number means no discount needed.\n");
-	printf("(The original price will not be modified.)\n");
+	printf("原价5000的物品会变为4500。\n");
+	printf("An item of price 5000 will be change into 4500.\n\n");
+	printf("0（零）开启零元购。\n");
+	printf("0 (zero) will make everything free.\n");
 	scanf("%d", &discount);
+//	printf("Give all trucks differential lock? (1 - yes; 0 - no)\n");
+//	scanf("%d", &difflock);
 	system("cls");
 
 	//debug
