@@ -10,13 +10,14 @@
 #define MaxP 4096 //max path length
 #define MaxD 16896 //max data size
 
-int discount = -1, count = 0;
+int discount = -1, difflock = 0, count = 0;
 FILE *inf, *ouf;
 
 //debug
 FILE *log;
 
 #define BFC 23
+
 const char blkFolders[BFC][25] =
 {
 	"_templates",
@@ -43,6 +44,14 @@ const char blkFolders[BFC][25] =
 	"weather",
 	"zones"
 };
+const char
+	c[] = "Country=",
+	p[] = "Price=",
+	e[] = "UnlockByExploration=",
+	r[] = "UnlockByRank=",
+	d[] = "DiffLockType=\"None\"\n";
+const char f404[] = "File Not Found\n";
+const char F404[] = "找不到文件\n";
 
 
 //run cmd command and put feedback into string resp
@@ -59,7 +68,7 @@ void getCmd(const char cmd[], char resp[])
 
 int strfchr(char src[], char c)
 {
-	int len = strlen(src), i;
+	int len = strlen(src);
 
 	if (!len) return(-1);
 	return((int) strchr(src, c) - (int) strchr(src, src[0]));
@@ -68,9 +77,9 @@ int strfchr(char src[], char c)
 //break string src into array of strings by char x
 int separate(char src[], char dst[MaxP][MaxI], char x)
 {
-	int len = strlen(src), i = 0, pos;
+	int i = 0, pos;
 
-	while ((pos = strfchr(src, 10)) != -1)
+	while ((pos = strfchr(src, x)) != -1)
 	{
 		memset(dst[i], 0, sizeof(dst[i]));
 		strncpy(dst[i], src, pos);
@@ -83,16 +92,10 @@ int separate(char src[], char dst[MaxP][MaxI], char x)
 
 int findStr(char src[])
 {
-	int len = strlen(src), i, j;
+	int len = strlen(src), i;
 	if (!len) return(0);
 
 	char str[MaxL] = "";
-
-	const char
-		c[] = "Country=",
-		p[] = "Price=",
-		e[] = "UnlockByExploration=",
-		r[] = "UnlockByRank=";
 
 	for (i = 0; i < len && (32 == src[i] || '\t' == src[i]); i++);
 
@@ -107,6 +110,8 @@ int findStr(char src[])
 		return(3);
 	if (!strncmp(str, r, strlen(r)))
 		return(4);
+	if (!strcmp(str, d) && difflock)
+		return(5);
 
 	return(0);
 }
@@ -115,7 +120,6 @@ int findStr(char src[])
 int needChange(char fileName[])
 {
 	char cache[MaxL] = "";
-	int r = 0;
 	FILE *inf = fopen(fileName, "r");
 
 	while (fgets(cache, sizeof(cache), inf) != NULL)
@@ -131,9 +135,7 @@ int needChange(char fileName[])
 void backupAndPrepareNew(char fileName[])
 {
 	char bakFile[MaxL] = "",
-		command[MaxP] = "",
-		fileName4space[MaxL] = "\"",
-		bakFile4space[MaxL] = "\"";
+		command[MaxP] = "";
 
 	strncpy(bakFile, fileName, strlen(fileName) - 3);
 	strcat(bakFile, "bak");
@@ -144,7 +146,6 @@ void backupAndPrepareNew(char fileName[])
 	strcat(command, bakFile);
 	system(command);
 
-	//printf("Backup made.\n%s\n\n", bakFile);
 	inf = fopen(bakFile, "r");
 	ouf = fopen(fileName, "w");
 
@@ -160,8 +161,7 @@ void findAndChangeData(FILE *inf, FILE *ouf)
 		switch (findStr(cache))
 		{
 			case 1://Country
-				x = strchr(cache, '=');
-				strcpy(x, "=\"\"\n");
+				strcpy(cache, "\t\tCountry=\"\"\n");
 				break;
 			case 2://Price
 				if (discount >= 0)
@@ -176,12 +176,13 @@ void findAndChangeData(FILE *inf, FILE *ouf)
 				}
 				break;
 			case 3://UnlockByExploration
-				x = strchr(cache, '=');
-				strcpy(x, "=\"false\"\n");
+				strcpy(cache, "\t\tUnlockByExploration=\"false\"\n");
 				break;
 			case 4://UnlockByRank
-				x = strchr(cache, '=');
-				strcpy(x, "=\"1\"\n");
+				strcpy(cache, "\t\tUnlockByRank=\"1\"\n");
+				break;
+			case 5://DiffLockType="None"
+				strcpy(cache, "\t\tDiffLockType=\"Installed\"\n");
 				break;
 		}
 		fputs(cache, ouf);
@@ -218,19 +219,14 @@ void toChangeFile(char fileName[])
 int checkNotFolder()
 {
 	char data[MaxP] = "";
-	const char prefix[] = "classes\n_dlc\n_templates\n";
 
 	getCmd("dir /a:d /b", data);
 	return(0);
-	return(strcmp(data, prefix));
 }
 
 int notEmpty(char data[])
 {
-	const char f404[] = "File Not Found\n";
-	const char F404[] = "找不到文件\n";
-
-	return(strlen(data, "") && strcmp(data, f404) && strcmp(data, F404));
+	return(strlen(data) && strcmp(data, f404) && strcmp(data, F404));
 }
 
 int whiteFolder(char name[])
