@@ -11,10 +11,10 @@
 #define MaxD 16896 //max data size
 
 int discount = -1, difflock = 0, count = 0;
-FILE *inf, *ouf;
+FILE* inf, * ouf;
 
 //debug
-FILE *log;
+FILE* log;
 
 #define BFC 23
 
@@ -45,11 +45,13 @@ const char blkFolders[BFC][25] =
 	"zones"
 };
 const char
-	c[] = "Country=",
-	p[] = "Price=",
-	e[] = "UnlockByExploration=",
-	r[] = "UnlockByRank=",
-	d[] = "DiffLockType=\"None\"\n";
+Torque[] = "Torque=\"none\"\n",
+Country[] = "Country=",
+DiffLockType[] = "DiffLockType=\"None\"\n",
+UnlockByExploration[] = "UnlockByExploration=",
+Price[] = "Price=",
+UnlockByRank[] = "UnlockByRank=";
+
 const char f404[] = "File Not Found\n";
 const char F404[] = "找不到文件\n";
 
@@ -58,7 +60,7 @@ const char F404[] = "找不到文件\n";
 void getCmd(const char cmd[], char resp[])
 {
 	char buf[MaxD] = "";
-	FILE *fp = _popen(cmd, "r");
+	FILE* fp = _popen(cmd, "r");
 
 	while (fgets(buf, sizeof(buf), fp))
 		strcat(resp, buf);
@@ -71,7 +73,7 @@ int strfchr(char src[], char c)
 	int len = strlen(src);
 
 	if (!len) return(-1);
-	return((int) strchr(src, c) - (int) strchr(src, src[0]));
+	return((int)strchr(src, c) - (int)strchr(src, src[0]));
 }
 
 //break string src into array of strings by char x
@@ -102,16 +104,18 @@ int findStr(char src[])
 	memset(str, 0, sizeof(str));
 	strcpy(str, src + i);
 
-	if (!strncmp(str, c, strlen(c)))
+	if (!strncmp(str, Country, strlen(Country)))
 		return(1);
-	if (!strncmp(str, p, strlen(p)))
+	if (!strncmp(str, Price, strlen(Price)))
 		return(2);
-	if (!strncmp(str, e, strlen(e)))
+	if (!strncmp(str, UnlockByExploration, strlen(UnlockByExploration)))
 		return(3);
-	if (!strncmp(str, r, strlen(r)))
-		return(4);
-	if (!strcmp(str, d) && difflock)
+	//if (!strncmp(str, UnlockByRank, strlen(UnlockByRank)))
+	//	return(4);
+	if (!strcmp(str, Torque))
 		return(5);
+	if (!strcmp(str, DiffLockType))
+		return(6);
 
 	return(0);
 }
@@ -120,7 +124,7 @@ int findStr(char src[])
 int needChange(char fileName[])
 {
 	char cache[MaxL] = "";
-	FILE *inf = fopen(fileName, "r");
+	FILE* inf = fopen(fileName, "r");
 
 	while (fgets(cache, sizeof(cache), inf) != NULL)
 		if (findStr(cache))
@@ -151,39 +155,42 @@ void backupAndPrepareNew(char fileName[])
 
 }
 
-void findAndChangeData(FILE *inf, FILE *ouf)
+void findAndChangeData(FILE* inf, FILE* ouf)
 {
-	char cache[MaxL] = "", *x, num[MaxL] = "";
+	char cache[MaxL] = "", * x, num[MaxL] = "";
 	int price;
 
 	while (fgets(cache, sizeof(cache), inf) != NULL)
 	{
 		switch (findStr(cache))
 		{
-			case 1://Country
-				strcpy(cache, "\t\tCountry=\"\"\n");
-				break;
-			case 2://Price
-				if (discount >= 0)
-				{
-					x = strchr(cache, '\"');
-					strcpy(num, x + 1);
-					price = atoi(num);
-					price = price * discount / 100;
-					itoa(price, num, 10);
-					strcpy(x + 1, num);
-					strcat(cache, "\"\n");
-				}
-				break;
-			case 3://UnlockByExploration
-				strcpy(cache, "\t\tUnlockByExploration=\"false\"\n");
-				break;
-			case 4://UnlockByRank
-				strcpy(cache, "\t\tUnlockByRank=\"1\"\n");
-				break;
-			case 5://DiffLockType="None"
-				strcpy(cache, "\t\tDiffLockType=\"Installed\"\n");
-				break;
+		case 1://Country
+			strcpy(cache, "\t\tCountry=\"\"\n");
+			break;
+		case 2://Price
+			if (discount >= 0)
+			{
+				x = strchr(cache, '\"');
+				strcpy(num, x + 1);
+				price = atoi(num);
+				price = price * discount / 100;
+				itoa(price, num, 10);
+				strcpy(x + 1, num);
+				strcat(cache, "\"\n");
+			}
+			break;
+		case 3://UnlockByExploration
+			strcpy(cache, "\t\tUnlockByExploration=\"false\"\n");
+			break;
+		case 4://UnlockByRank
+			strcpy(cache, "\t\tUnlockByRank=\"1\"\n");
+			break;
+		case 5://Torque="none"
+			strcpy(cache, "\t\t\tTorque=\"default\"\n");
+			break;
+		//case 6://DiffLockType="none"
+		//	strcpy(cache, "\t\t\t =\"default\"\n");
+		//	break;
 		}
 		fputs(cache, ouf);
 	}
@@ -193,7 +200,8 @@ void toChangeFile(char fileName[])
 {
 	char command[MaxP] = "del ";
 
-	if (needChange(fileName))
+//	if (needChange(fileName))
+	if (1)
 	{
 		//debug
 		fprintf(log, "%s\n", fileName);
