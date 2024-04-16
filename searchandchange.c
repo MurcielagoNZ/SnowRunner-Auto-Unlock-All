@@ -2,12 +2,12 @@
 
 #include "theTools.h"
 
-int depth = 0, i;
-char name[MaxP] = "";
-
 const char cmd[] = "dir ";
 const char cmd4folder[] = " /a:d /b";
 const char cmd4file[] = " /a:-d *.xml /b";
+
+int depth = 0, i;
+char name[MaxP] = "";
 
 void searchAndChange(char currPath[])
 {
@@ -18,9 +18,8 @@ void searchAndChange(char currPath[])
 
 	depth++;
 
-	system("cls");
 	printf("Now working with path:\n%s\nDepth: %d\n\n", currPath, depth);
-	
+
 	//for all files
 	memset(str, 0, sizeof(str));
 	strcpy(str, cmd);
@@ -57,7 +56,7 @@ void searchAndChange(char currPath[])
 			strcpy(str, currPath);
 			strcat(str, "\\");
 			strcat(str, names[i]);
-			if (whiteFolder(names[i])) 
+			if (whiteFolder(names[i]))
 				searchAndChange(str);
 			else delDir(str);
 		}
@@ -75,15 +74,15 @@ int main(int argc, char *argv[])
 	printf("Would like a discount?\n");
 	printf("输入一个整数作为百分数并且按下【回车】。\n");
 	printf("Input an integer for percent and press ENTER.\n");
-	printf("例如：\n90\n会将所有物品的价格打九折。\n");
+	printf("例如：\n90\n会将 所有物品的价格打九折。\n");
 	printf("For example:\n90\nmeans the price will be 10%% off.\n");
 	printf("原价5000的物品会变为4500。\n");
 	printf("An item of price 5000 will be change into 4500.\n\n");
 	printf("0（零）开启零元购。\n");
 	printf("0 (zero) will make everything free.\n");
 	scanf("%d", &discount);
-//	printf("Give all trucks differential lock? (1 - yes; 0 - no)\n");
-//	scanf("%d", &difflock);
+	//	printf("Give all trucks differential lock? (1 - yes; 0 - no)\n");
+	//	scanf("%d", &difflock);
 	system("cls");
 
 	//debug
@@ -99,7 +98,6 @@ int main(int argc, char *argv[])
 			strcpy(name, argv[i]);
 			if (needChange(name))
 			{
-				system("cls");
 				printf("Working with:\n%s\n\n", name);
 				backupAndPrepareNew(name);
 				toChangeFile(name);
@@ -123,8 +121,7 @@ int main(int argc, char *argv[])
 			//searchAndChange("");
 		}
 
-	system("del /s *.bak");
-	system("cls");
+	system("del /s *.bak > nul");
 	printf("All done. Changed %d files.\n", count);
 	system("pause");
 
