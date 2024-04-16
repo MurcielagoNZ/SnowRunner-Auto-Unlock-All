@@ -11,10 +11,10 @@
 #define MaxD 16896 //max data size
 
 int discount = -1, difflock = 0, count = 0;
-FILE* inf, * ouf;
+FILE *inf, *ouf;
 
 //debug
-FILE* log;
+FILE *log;
 
 #define BFC 23
 
@@ -55,12 +55,11 @@ UnlockByRank[] = "UnlockByRank=";
 const char f404[] = "File Not Found\n";
 const char F404[] = "找不到文件\n";
 
-
 //run cmd command and put feedback into string resp
 void getCmd(const char cmd[], char resp[])
 {
 	char buf[MaxD] = "";
-	FILE* fp = _popen(cmd, "r");
+	FILE *fp = _popen(cmd, "r");
 
 	while (fgets(buf, sizeof(buf), fp))
 		strcat(resp, buf);
@@ -110,8 +109,8 @@ int findStr(char src[])
 		return(2);
 	if (!strncmp(str, UnlockByExploration, strlen(UnlockByExploration)))
 		return(3);
-	//if (!strncmp(str, UnlockByRank, strlen(UnlockByRank)))
-	//	return(4);
+	if (!strncmp(str, UnlockByRank, strlen(UnlockByRank)))
+		return(4);
 	if (!strcmp(str, Torque))
 		return(5);
 	if (!strcmp(str, DiffLockType))
@@ -124,7 +123,7 @@ int findStr(char src[])
 int needChange(char fileName[])
 {
 	char cache[MaxL] = "";
-	FILE* inf = fopen(fileName, "r");
+	FILE *inf = fopen(fileName, "r");
 
 	while (fgets(cache, sizeof(cache), inf) != NULL)
 		if (findStr(cache))
@@ -144,10 +143,11 @@ void backupAndPrepareNew(char fileName[])
 	strncpy(bakFile, fileName, strlen(fileName) - 3);
 	strcat(bakFile, "bak");
 
-	strcat(command, " copy ");
+	strcat(command, "copy ");
 	strcat(command, fileName);
 	strcat(command, " ");
 	strcat(command, bakFile);
+	strcat(command, " > nul");
 	system(command);
 
 	inf = fopen(bakFile, "r");
@@ -155,9 +155,9 @@ void backupAndPrepareNew(char fileName[])
 
 }
 
-void findAndChangeData(FILE* inf, FILE* ouf)
+void findAndChangeData(FILE *inf, FILE *ouf)
 {
-	char cache[MaxL] = "", * x, num[MaxL] = "";
+	char cache[MaxL] = "", *x, num[MaxL] = "";
 	int price;
 
 	while (fgets(cache, sizeof(cache), inf) != NULL)
@@ -188,9 +188,9 @@ void findAndChangeData(FILE* inf, FILE* ouf)
 		case 5://Torque="none"
 			strcpy(cache, "\t\t\tTorque=\"default\"\n");
 			break;
-		//case 6://DiffLockType="none"
-		//	strcpy(cache, "\t\t\t =\"default\"\n");
-		//	break;
+			//case 6://DiffLockType="none"
+			//	strcpy(cache, "\t\t\t =\"default\"\n");
+			//	break;
 		}
 		fputs(cache, ouf);
 	}
@@ -200,14 +200,12 @@ void toChangeFile(char fileName[])
 {
 	char command[MaxP] = "del ";
 
-//	if (needChange(fileName))
-	if (1)
+	if (needChange(fileName))
 	{
 		//debug
 		fprintf(log, "%s\n", fileName);
 
 		count++;
-		system("cls");
 		printf("File No.%d\n", count);
 		backupAndPrepareNew(fileName);
 		printf("Now changing:\n%s\n\n", fileName);
@@ -217,7 +215,6 @@ void toChangeFile(char fileName[])
 	}
 	else
 	{
-		system("cls");
 		printf("No need to change file:\n%s\n\n", fileName);//test
 		strcat(command, fileName);
 		system(command);
