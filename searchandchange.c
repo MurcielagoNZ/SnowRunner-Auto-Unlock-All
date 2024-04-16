@@ -131,3 +131,11 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
+/*
+* need manual change cuz format error:
+* dlc6 step_3364_crocodile
+* dlc8 step_39331_pike
+* 
+* Offset="(从车辆中心+前-后; 从地面+上-下; 从车辆中心+左-右)"
+*/
