@@ -9,14 +9,12 @@
 #define MaxL 1280 //max string length
 #define MaxP 4096 //max path length
 #define MaxD 16896 //max data size
+#define BFC 23
+#define namesCount 6
 
 int discount = -1, difflock = 0, count = 0;
 FILE *inf, *ouf;
-
-//debug
-FILE *log;
-
-#define BFC 23
+FILE *log; //debug
 
 const char blkFolders[BFC][25] =
 {
@@ -44,16 +42,18 @@ const char blkFolders[BFC][25] =
 	"weather",
 	"zones"
 };
-const char
-Torque[] = "Torque=\"none\"\n",
-Country[] = "Country=",
-DiffLockType[] = "DiffLockType=\"None\"\n",
-UnlockByExploration[] = "UnlockByExploration=",
-Price[] = "Price=",
-UnlockByRank[] = "UnlockByRank=";
+const char names[namesCount][32] =
+{
+	"Country=",
+	"Price=",
+	"UnlockByExploration=",
+	"UnlockByRank=",
+	"Torque=\"none\"\n",
+	"DiffLockType=\"None\"\n"
+};
 
 const char f404[] = "File Not Found\n";
-const char F404[] = "鎵句笉鍒版枃浠禱n";
+const char F404[] = "找不到文件\n";
 
 //run cmd command and put feedback into string resp
 void getCmd(const char cmd[], char resp[])
@@ -103,18 +103,11 @@ int findStr(char src[])
 	memset(str, 0, sizeof(str));
 	strcpy(str, src + i);
 
-	if (!strncmp(str, Country, strlen(Country)))
-		return(1);
-	if (!strncmp(str, Price, strlen(Price)))
-		return(2);
-	if (!strncmp(str, UnlockByExploration, strlen(UnlockByExploration)))
-		return(3);
-	if (!strncmp(str, UnlockByRank, strlen(UnlockByRank)))
-		return(4);
-	if (!strcmp(str, Torque))
-		return(5);
-	if (!strcmp(str, DiffLockType))
-		return(6);
+	for (i = 0; i < namesCount; i++)
+	{
+		if (!strncmp(str, names[i], strlen(names[i])))
+			return(i + 1);
+	}
 
 	return(0);
 }
@@ -174,7 +167,7 @@ void findAndChangeData(FILE *inf, FILE *ouf)
 				strcpy(num, x + 1);
 				price = atoi(num);
 				price = price * discount / 100;
-				itoa(price, num, 10);
+				_itoa(price, num, 10);
 				strcpy(x + 1, num);
 				strcat(cache, "\"\n");
 			}
