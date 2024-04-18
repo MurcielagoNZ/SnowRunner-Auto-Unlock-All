@@ -66,68 +66,71 @@ void searchAndChange(char currPath[])
 	depth--;
 }
 
-int main(int argc, char *argv[])
+int main()
 {
-	printf("è¯¥å·¥å…·ä¼šå¸®ä½ è§£é”ç‰©å“çš„åœ°åŒºã€çº§åˆ«é™åˆ¶ï¼Œå¹¶è®©éœ€è¦æ¢ç´¢æ‰èƒ½è§£é”çš„ç‰©å“ç›´æ¥å¯ç”¨ã€‚\n");
-	printf("This tool will unlock everything.\n\n");
-	printf("æƒ³æ‰“æŠ˜å˜›ï¼Ÿ\n");
+	printf("¸Ã¹¤¾ß»á°ïÄã½âËøÎïÆ·µÄµØÇø¡¢¼¶±ğÏŞÖÆ£¬²¢ÈÃĞèÒªÌ½Ë÷²ÅÄÜ½âËøµÄÎïÆ·Ö±½Ó¿ÉÓÃ¡£\nĞÂÔöÁËÈ«ÂÖÇı¶¯ºÍº¸ËÀ²îËÙÆ÷¹¦ÄÜ¡£\n");
+	printf("This tool will unlock everything.\nAWD-modify and differential-welde feature were added.\n\n");
+	printf("Ïë´òÕÛÂï£¿\n");
+	printf("ÊäÈëÒ»¸öÕûÊı×÷Îª°Ù·ÖÊı²¢ÇÒ°´ÏÂ¡¾»Ø³µ¡¿¡£Èô²»Ïë´òÕÛ£¬ÇëÊäÈë¸ºÊı¡£\n");
+	printf("ÀıÈç£º\n90\n»á½«ËùÓĞÎïÆ·µÄ¼Û¸ñ´ò¾ÅÕÛ¡£\n");
+	printf("Ô­¼Û5000µÄÎïÆ·»á±äÎª4500¡£\n");
+	printf("0£¨Áã£©¿ªÆôÁãÔª¹º¡£\n");
 	printf("Would like a discount?\n");
-	printf("è¾“å…¥ä¸€ä¸ªæ•´æ•°ä½œä¸ºç™¾åˆ†æ•°å¹¶ä¸”æŒ‰ä¸‹ã€å›è½¦ã€‘ã€‚\n");
-	printf("Input an integer for percent and press ENTER.\n");
-	printf("ä¾‹å¦‚ï¼š\n90\nä¼šå°† æ‰€æœ‰ç‰©å“çš„ä»·æ ¼æ‰“ä¹æŠ˜ã€‚\n");
+	printf("Input an integer for percent and press ENTER. If don't want discount, input negative number.\n");
 	printf("For example:\n90\nmeans the price will be 10%% off.\n");
-	printf("åŸä»·5000çš„ç‰©å“ä¼šå˜ä¸º4500ã€‚\n");
-	printf("An item of price 5000 will be change into 4500.\n\n");
-	printf("0ï¼ˆé›¶ï¼‰å¼€å¯é›¶å…ƒè´­ã€‚\n");
+	printf("An item of price 5000 will be change into 4500.\n");
 	printf("0 (zero) will make everything free.\n");
 	scanf("%d", &discount);
-	//	printf("Give all trucks differential lock? (1 - yes; 0 - no)\n");
-	//	scanf("%d", &difflock);
+	printf("\n½«ËùÓĞ¿¨³µÉèÖÃÎªÈ«ÂÖÇı¶¯Âğ£¿ (1 - ÊÇ; 0 - ·ñ)\n");
+	printf("Give all trucks AWD? (1 - yes; 0 - no)\n");
+	scanf("%d", &AWD);
+	printf("\n½«ËùÓĞ²»Ö§³Ö²îËÙËøµÄ¿¨³µÉèÖÃÎª²îËÙËø³£ËøÂğ£¿ (1 - ÊÇ; 0 - ·ñ)\n");
+	printf("Give all trucks differential lock? (1 - yes; 0 - no)\n");
+	scanf("%d", &difflock);
 	system("cls");
 
 	//debug
-	log = fopen("files_changed.log", "w");
+	//log = fopen("files_changed.log", "w");
 
-	if (argc > 1)
-	{
-		printf("Working with given file.\n");
-
-		for (i = 1; i < argc; i++)
+	/*if (argc > 1)
 		{
-			memset(name, 0, sizeof(name));
-			strcpy(name, argv[i]);
-			if (needChange(name))
-			{
-				printf("Working with:\n%s\n\n", name);
-				backupAndPrepareNew(name);
-				toChangeFile(name);
-			}
-		}
+			printf("Working with given file.\n");
 
+			for (i = 1; i < argc; i++)
+			{
+				memset(name, 0, sizeof(name));
+				strcpy(name, argv[i]);
+				if (needChange(name))
+				{
+					printf("Working with:\n%s\n\n", name);
+					backupAndPrepareNew(name);
+					toChangeFile(name);
+				}
+			}
+
+			system("pause");
+			return 0;
+		}
+		else*/
+	if (checkNotFolder())
+	{
+		printf("Wrong folder!\n");
 		system("pause");
-		return 0;
+		return -1;
 	}
 	else
-		if (checkNotFolder())
-		{
-			printf("Wrong folder!\n");
-			system("pause");
-			return -1;
-		}
-		else
-		{
-			printf("Searching folders.\n");
-			searchAndChange("[media]");//test
-			//searchAndChange("");
-		}
+	{
+		printf("Searching folders.\n");
+		searchAndChange("[media]");
+	}
 
 	system("del /s *.bak > nul");
 	printf("All done. Changed %d files.\n", count);
 	system("pause");
 
 	//debug
-	fprintf(log, "%d\n", count);
-	fclose(log);
+	//fprintf(log, "%d\n", count);
+	//fclose(log);
 
 	return 0;
 }
@@ -136,6 +139,6 @@ int main(int argc, char *argv[])
 * need manual change cuz format error:
 * dlc6 step_3364_crocodile
 * dlc8 step_39331_pike
-* 
-* Offset="(ä»è½¦è¾†ä¸­å¿ƒ+å‰-å; ä»åœ°é¢+ä¸Š-ä¸‹; ä»è½¦è¾†ä¸­å¿ƒ+å·¦-å³)"
+*
+* Offset="(´Ó³µÁ¾ÖĞĞÄ+Ç°-ºó; ´ÓµØÃæ+ÉÏ-ÏÂ; ´Ó³µÁ¾ÖĞĞÄ+×ó-ÓÒ)"
 */

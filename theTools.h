@@ -9,12 +9,12 @@
 #define MaxL 1280 //max string length
 #define MaxP 4096 //max path length
 #define MaxD 16896 //max data size
-#define BFC 23
+#define BFC 23 //blocked folders count
 #define namesCount 6
 
-int discount = -1, difflock = 0, count = 0;
+int discount = -1, AWD = 0, difflock = 0, count = 0;
 FILE *inf, *ouf;
-FILE *log; //debug
+//FILE *log; //debug
 
 const char blkFolders[BFC][25] =
 {
@@ -72,7 +72,7 @@ int strfchr(char src[], char c)
 	int len = strlen(src);
 
 	if (!len) return(-1);
-	return((int)strchr(src, c) - (int)strchr(src, src[0]));
+	return(strchr(src, c) - src);
 }
 
 //break string src into array of strings by char x
@@ -173,17 +173,17 @@ void findAndChangeData(FILE *inf, FILE *ouf)
 			}
 			break;
 		case 3://UnlockByExploration
-			strcpy(cache, "\t\tUnlockByExploration=\"false\"\n");
+			strcpy(cache, "\tUnlockByExploration=\"false\"\n");
 			break;
 		case 4://UnlockByRank
-			strcpy(cache, "\t\tUnlockByRank=\"1\"\n");
+			strcpy(cache, "\tUnlockByRank=\"1\"\n");
 			break;
-		case 5://Torque="none"
-			strcpy(cache, "\t\t\tTorque=\"default\"\n");
+		case 5://Torque="none" - awd
+			if (AWD) strcpy(cache, "\tTorque=\"Full\"\n");
 			break;
-			//case 6://DiffLockType="none"
-			//	strcpy(cache, "\t\t\t =\"default\"\n");
-			//	break;
+		case 6://DiffLockType="none"
+			if (difflock) strcpy(cache, "\tDiffLockType=\"Always\"\n");
+			break;
 		}
 		fputs(cache, ouf);
 	}
@@ -196,7 +196,7 @@ void toChangeFile(char fileName[])
 	if (needChange(fileName))
 	{
 		//debug
-		fprintf(log, "%s\n", fileName);
+		//fprintf(log, "%s\n", fileName);
 
 		count++;
 		printf("File No.%d\n", count);
