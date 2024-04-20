@@ -10,7 +10,7 @@
 #define MaxP 4096 //max path length
 #define MaxD 16896 //max data size
 #define BFC 23 //blocked folders count
-#define namesCount 6
+#define namesCount 7
 
 int discount = -1, AWD = 0, difflock = 0, count = 0;
 FILE *inf, *ouf;
@@ -49,7 +49,8 @@ const char names[namesCount][32] =
 	"UnlockByExploration=",
 	"UnlockByRank=",
 	"Torque=\"none\"\n",
-	"DiffLockType=\"None\"\n"
+	"DiffLockType=\"None\"\n",
+	"<GameData Price="
 };
 
 const char f404[] = "File Not Found\n";
@@ -183,6 +184,18 @@ void findAndChangeData(FILE *inf, FILE *ouf)
 			break;
 		case 6://DiffLockType="none"
 			if (difflock) strcpy(cache, "\tDiffLockType=\"Always\"\n");
+			break;
+		case 7://only Price in the line i.e. <GameData Price="***">
+			if (discount >= 0)
+			{
+				x = strchr(cache, '\"');
+				strcpy(num, x + 1);
+				price = atoi(num);
+				price = price * discount / 100;
+				_itoa(price, num, 10);
+				strcpy(x + 1, num);
+				strcat(cache, "\">\n");
+			}
 			break;
 		}
 		fputs(cache, ouf);
